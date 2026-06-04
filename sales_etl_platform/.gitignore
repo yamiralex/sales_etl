@@ -15,6 +15,8 @@ __pycache__/
 # dbt generated artifacts
 dbt/target/
 dbt/logs/
+dbt/venv/
+dbt/target/
 
 # OS files
 .DS_Store
