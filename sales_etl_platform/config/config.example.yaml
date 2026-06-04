@@ -1,0 +1,7 @@
+snowflake:
+  account: YOUR_ACCOUNT
+  user: YOUR_USER
+  password: YOUR_PASSWORD
+  warehouse: COMPUTE_WH
+  database: SALES_DB
+  schema: RAW
