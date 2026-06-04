@@ -583,6 +583,12 @@ Potential enhancements include:
 
 ---
 
+# Disclaimer
+
+This project was developed as a technical assessment and portfolio demonstration.
+
+All data used in this repository is synthetic and generated for demonstration purposes only. No real customer, employee, or business data is included.
+
 # Author
 
 Yamir Palacios
