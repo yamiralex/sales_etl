@@ -1,0 +1,12 @@
+paths:
+  inbox: "/opt/airflow/inbox"
+  archive: "/opt/airflow/archive"
+  output: "/opt/airflow/output"
+
+snowflake:
+  account: "GTFKWVR-TDC55215"           # ← CHANGE THIS (e.g. xy12345.us-east-1)
+  user: "yaminpal"                 # ← CHANGE THIS
+  password: "Chimbita@1991$"         # ← CHANGE THIS
+  warehouse: "COMPUTE_WH"
+  database: "SALES_DB"
+  role: "ACCOUNTADMIN"

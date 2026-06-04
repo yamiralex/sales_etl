@@ -1,0 +1,43 @@
+version: 2
+
+models:
+
+  - name: silver_sales
+
+    description: >
+      Deduplicated sales transactions.
+      Latest record retained based on load_timestamp.
+      Includes data quality validation flags.
+
+    columns:
+
+      - name: store_token
+        description: Unique store identifier.
+        tests:
+          - not_null
+
+      - name: transaction_id
+        description: Unique transaction identifier.
+        tests:
+          - not_null
+
+      - name: amount
+        description: Transaction amount.
+        tests:
+          - not_null
+
+      - name: is_valid_record
+        description: Indicates whether the record passed validation checks.
+
+  - name: silver_stores
+
+    description: >
+      Canonical list of stores loaded from source files.
+
+    columns:
+
+      - name: store_token
+        description: Unique store identifier.
+        tests:
+          - unique
+          - not_null

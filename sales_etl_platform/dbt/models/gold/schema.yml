@@ -1,0 +1,18 @@
+version: 2
+
+models:
+
+  - name: rpt_transactions_by_batch
+
+    description: >
+      Output 1. Batch processing statistics for the latest 40 batches.
+
+  - name: rpt_sales_by_transaction_date
+
+    description: >
+      Output 2. Daily sales statistics for the latest 40 transaction dates.
+
+  - name: rpt_top_5_sales_stores
+
+    description: >
+      Output 3. Top 5 stores by sales amount for the latest 10 transaction dates.

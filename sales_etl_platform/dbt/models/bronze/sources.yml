@@ -1,0 +1,9 @@
+version: 2
+sources:
+  - name: raw
+    database: SALES_DB
+    schema: RAW
+    tables:
+      - name: sales
+      - name: stores
+      - name: file_audit
