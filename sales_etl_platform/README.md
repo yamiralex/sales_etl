@@ -4,15 +4,15 @@
 
 This project implements a batch-oriented data platform that ingests daily store and sales files, validates and processes the data, and produces business-ready reporting datasets.
 
-The solution was designed following modern Data Engineering principles:
+The solution was designed following modern Data Engineering best practices and demonstrates:
 
-- Apache Airflow for orchestration
-- Snowflake as Data Warehouse
-- dbt for transformations and data quality
-- Python for ingestion
-- Medallion Architecture (Bronze → Silver → Gold)
-- Auditability and lineage
+- Batch data ingestion
+- Data quality validation
+- End-to-end orchestration
+- Data lineage and auditability
 - Idempotent processing
+- Medallion Architecture (Bronze → Silver → Gold)
+- Reporting-ready datasets
 
 ---
 
@@ -23,65 +23,136 @@ The solution was designed following modern Data Engineering principles:
 | Orchestration | Apache Airflow |
 | Data Warehouse | Snowflake |
 | Transformations | dbt |
-| Language | Python |
+| Programming Language | Python |
 | Storage | Local Filesystem (simulating object storage) |
 | Architecture Pattern | Medallion Architecture |
 
 ---
 
-## Project Structure
+# Quick Start
 
-sales_etl_platform/
+## 1. Clone Repository
 
-├── archive/
-
-├── config/
-
-│ └── config.yaml
-
-├── dags/
-
-│ └── sales_daily_etl.py
-
-├── dbt/
-
-│ ├── models/
-
-│ │ ├── silver/
-
-│ │ └── gold/
-
-│ ├── tests/
-
-│ ├── dbt_project.yml
-
-│ └── profiles.yml
-
-├── docs/
-
-│ ├── architecture.md
-
-│ ├── assumptions.md
-
-│ └── questions_for_product.md
-
-├── inbox/
-
-├── output/
-
-├── scripts/
-
-│ ├── ingest.py
-
-│ └── generate_fake_data.py
-
-├── docker-compose.yml
-
-└── README.md
+```bash
+git clone <repository_url>
+cd sales_etl_platform
+```
 
 ---
 
-## Architecture Overview
+## 2. Create Configuration Files
+
+Configuration files containing credentials are intentionally excluded from source control.
+
+### Application Configuration
+
+```bash
+cp config/config.example.yaml config/config.yaml
+```
+
+Update the generated file with your Snowflake connection details.
+
+### dbt Profile
+
+```bash
+cp dbt/profiles.example.yml dbt/profiles.yml
+```
+
+Update the generated profile with your Snowflake credentials.
+
+---
+
+## 3. Start Airflow Environment
+
+```bash
+docker compose up -d
+```
+
+Verify Airflow is running:
+
+```text
+http://localhost:8080
+```
+
+---
+
+## 4. Generate Sample Data
+
+```bash
+python scripts/generate_fake_data.py
+```
+
+This generates sample files in the inbox folder:
+
+```text
+inbox/
+├── stores_YYYYMMDD.csv
+└── sales_YYYYMMDD.csv
+```
+
+---
+
+## 5. Trigger the Pipeline
+
+Open Airflow:
+
+```text
+http://localhost:8080
+```
+
+Trigger DAG:
+
+```text
+sales_daily_etl
+```
+
+---
+
+## 6. Run dbt Manually (Optional)
+
+```bash
+dbt run
+dbt test
+```
+
+---
+
+# Project Structure
+
+```text
+sales_etl_platform
+├── archive/                        # Archived processed files
+├── config/
+│   ├── config.example.yaml
+│   └── config.yaml                 # Local only (gitignored)
+├── dags/
+│   └── sales_daily_etl.py
+├── dbt/
+│   ├── models/
+│   │   ├── silver/
+│   │   └── gold/
+│   ├── tests/
+│   ├── logs/
+│   ├── target/
+│   ├── profiles.example.yml
+│   ├── profiles.yml                # Local only (gitignored)
+│   └── dbt_project.yml
+├── docs/
+│   ├── architecture.md
+│   ├── assumptions.md
+│   └── questions_for_product.md
+├── inbox/                          # Incoming source files
+├── output/
+├── scripts/
+│   ├── ingest.py
+│   └── generate_fake_data.py
+├── docker-compose.yml
+└── README.md
+```
+
+---
+
+# Architecture Overview
 
 ```text
                    +----------------+
@@ -140,92 +211,178 @@ sales_etl_platform/
 
 ---
 
-## Medallion Architecture
+# Medallion Architecture
 
-### Bronze Layer (RAW)
+## Bronze Layer (RAW)
 
 Stores source data exactly as received from the partner.
 
-Tables:
+### Tables
 
 - RAW.STORES
 - RAW.SALES
 - RAW.FILE_AUDIT
 
-Responsibilities:
+### Responsibilities
 
 - Preserve source data
 - Maintain lineage
+- Enable historical auditing
 - Support reprocessing
 
 ---
 
-### Silver Layer
+## Silver Layer
 
-Stores validated and deduplicated business entities.
+Stores validated and business-ready entities.
 
-Tables:
+### Tables
 
-- silver_stores
-- silver_sales
+- SILVER_STORES
+- SILVER_SALES
 
-Responsibilities:
+### Responsibilities
 
 - Type casting
+- Data standardization
 - Validation
 - Deduplication
 - Business rule enforcement
 
 ---
 
-### Gold Layer
+## Gold Layer
 
 Stores reporting-ready datasets.
 
-Tables:
+### Tables
 
-- report_1_transactions_processed
-- report_2_sales_by_transaction_date
-- report_3_top_5_stores
+- REPORT_1_TRANSACTIONS_PROCESSED
+- REPORT_2_SALES_BY_TRANSACTION_DATE
+- REPORT_3_TOP_5_STORES
 
-Responsibilities:
+### Responsibilities
 
 - Aggregation
 - KPI generation
-- Business consumption
+- Reporting consumption
+- Executive dashboards
 
 ---
 
-## Data Quality
+# Data Flow
 
-The project includes automated dbt tests:
+## Step 1 – File Arrival
+
+Daily files are received from an external partner.
+
+Examples:
+
+```text
+stores_20260604.csv
+sales_20260604.csv
+```
+
+Files are placed into:
+
+```text
+inbox/
+```
+
+---
+
+## Step 2 – Ingestion
+
+Airflow orchestrates ingestion using Python.
+
+The ingestion process:
+
+- Validates file naming conventions
+- Uploads files to Snowflake internal stage
+- Executes COPY INTO commands
+- Registers metadata in audit tables
+- Archives successfully processed files
+
+---
+
+## Step 3 – Transformations
+
+dbt transforms raw data through:
+
+```text
+RAW → SILVER → GOLD
+```
+
+Transformation responsibilities:
+
+- Validation
+- Deduplication
+- Aggregation
+- Business reporting
+
+---
+
+## Step 4 – Reporting
+
+Business-ready datasets are produced for analytics consumption.
+
+---
+
+# Data Quality Controls
+
+The platform enforces quality controls at multiple layers.
+
+## Ingestion Layer
+
+Controls include:
+
+- File naming validation
+- Batch date extraction
+- Audit tracking
+- Archive management
+- Load timestamp tracking
+
+---
+
+## Transformation Layer
+
+dbt tests validate:
 
 ### Generic Tests
 
-- not_null
-- unique
+- `not_null`
+- `unique`
+- `relationships`
 
-### Custom Tests
+### Custom Business Tests
 
-- valid_store_token
-- unique_transaction
+- Valid store token validation
+- Duplicate transaction detection
+- Referential integrity validation
+
+Failed tests prevent promotion to downstream layers.
 
 ---
 
-## Idempotency Strategy
+# Idempotency Strategy
 
-Duplicate loads are prevented through:
+The platform is designed to safely support reprocessing.
 
-### Snowflake COPY INTO
+## Snowflake COPY INTO
 
 ```sql
-COPY INTO ...
-FORCE = FALSE
+COPY INTO target_table
+FROM @stage
+FORCE = FALSE;
 ```
 
-### Business-Level Deduplication
+This prevents duplicate file ingestion from Snowflake stages.
 
-Duplicate transaction detection:
+---
+
+## Business-Level Deduplication
+
+Duplicate transaction detection is performed using:
 
 ```text
 (store_token, transaction_id)
@@ -242,18 +399,45 @@ ROW_NUMBER() OVER (
 
 ---
 
-## File Archival
+# Auditability
 
-After successful processing:
+The platform tracks all ingestion activity.
 
-Inbox:
+Audit information includes:
+
+- Source file name
+- Batch date
+- Load timestamp
+- Row counts
+- Processing status
+
+Stored in:
 
 ```text
-stores_20260604.csv
-sales_20260604.csv
+RAW.FILE_AUDIT
 ```
 
-becomes:
+This supports:
+
+- Operational monitoring
+- Historical traceability
+- Reprocessing workflows
+
+---
+
+# File Archival
+
+After successful processing, files are archived.
+
+Before:
+
+```text
+inbox/
+├── stores_20260604.csv
+└── sales_20260604.csv
+```
+
+After:
 
 ```text
 archive/
@@ -266,54 +450,143 @@ archive/
         └── sales_20260604.csv
 ```
 
-This guarantees:
+Benefits:
 
 - Historical retention
 - Reprocessing capability
-- Compliance with assessment requirements
+- Audit compliance
+- Operational traceability
 
 ---
 
-## Running the Platform
+# Key Engineering Decisions
 
-### Generate Test Data
+## Why Snowflake?
 
-```bash
-python scripts/generate_fake_data.py
-```
-
-### Trigger Airflow Pipeline
-
-```bash
-Open Airflow UI
-
-http://localhost:8080
-
-Trigger DAG:
-
-sales_daily_etl
-```
-
-### Execute dbt
-
-```bash
-dbt run
-
-dbt test
-```
+- Native support for batch ingestion
+- Internal stages and COPY INTO
+- Separation of storage and compute
+- Scalable architecture
 
 ---
 
-## Deliverables
+## Why dbt?
 
-### Output 1
+- SQL-first transformations
+- Built-in testing framework
+- Lineage visibility
+- Reproducible data pipelines
 
-Transactions Processed by Batch Date
+---
 
-### Output 2
+## Why Airflow?
 
-Sales by Transaction Date
+- Industry-standard orchestration
+- Scheduling and dependency management
+- Observability and monitoring
+- Extensible workflow design
 
-### Output 3
+---
 
-Top 5 Sales Storess
+## Why Medallion Architecture?
+
+- Clear separation of responsibilities
+- Improved maintainability
+- Better data quality controls
+- Simplified troubleshooting
+
+---
+
+# Business Deliverables
+
+## Report 1 – Transactions Processed by Batch Date
+
+Provides:
+
+- Number of transactions processed
+- Batch monitoring metrics
+- Operational KPI visibility
+
+---
+
+## Report 2 – Sales by Transaction Date
+
+Provides:
+
+- Daily revenue trends
+- Transaction performance
+- Historical sales analysis
+
+---
+
+## Report 3 – Top 5 Stores by Sales
+
+Provides:
+
+- Store ranking by revenue
+- Performance benchmarking
+- Executive reporting metrics
+
+---
+
+# Security
+
+The following files are intentionally excluded from version control:
+
+```text
+config/config.yaml
+dbt/profiles.yml
+archive/
+inbox/
+dbt/logs/
+dbt/target/
+```
+
+This prevents:
+
+- Credential exposure
+- Runtime artifact commits
+- Local environment leakage
+
+---
+
+# Additional Documentation
+
+Additional design documentation is available in:
+
+```text
+docs/
+├── architecture.md
+├── assumptions.md
+└── questions_for_product.md
+```
+
+These documents provide:
+
+- Architectural decisions
+- Assumptions made during implementation
+- Product and business clarification questions
+
+---
+
+# Future Improvements
+
+Potential enhancements include:
+
+- Object storage integration (S3, Azure Blob, GCS)
+- CI/CD pipeline for dbt deployments
+- Infrastructure as Code (Terraform)
+- Data observability tooling
+- Automated schema evolution
+- Incremental processing patterns
+- Dashboard integration (Power BI, Tableau, Looker)
+
+---
+
+# Author
+
+Yamir Palacios
+
+Principal Data Engineer | Data Architect
+
+Technical Assessment Submission
