@@ -6,6 +6,7 @@ inbox/
 config/config.yaml
 config/config.yml
 dbt/profiles.yml
+dbt/.user.yml
 
 # Python
 __pycache__/
