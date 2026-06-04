@@ -3,8 +3,8 @@ archive/
 inbox/
 
 # Config credentials (IMPORTANT)
-config/*.yaml
-config/*.yml
+config/config.yaml
+config/config.yml
 
 # dbt credentials (if exists)
 dbt/profiles.yml
