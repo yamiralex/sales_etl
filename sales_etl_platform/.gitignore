@@ -1,0 +1,17 @@
+# Data folders (runtime / generated)
+archive/
+inbox/
+
+# Config credentials (IMPORTANT)
+config/*.yaml
+config/*.yml
+
+# dbt credentials (if exists)
+dbt/profiles.yml
+
+# Python cache
+__pycache__/
+*.pyc
+
+# OS files
+.DS_Store
