@@ -587,6 +587,6 @@ Potential enhancements include:
 
 Yamir Palacios
 
-Principal Data Engineer | Data Architect
+Staff Data Engineer | Data Architect
 
 Technical Assessment Submission
